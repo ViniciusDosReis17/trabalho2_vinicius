@@ -5,281 +5,253 @@ import { useForm, useFieldArray, FieldErrors } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast } from "sonner";
-import { FaArrowLeft, FaPlus, FaTrash, FaSave, FaUpload } from "react-icons/fa";
+import { FaArrowLeft, FaPlus, FaTrash, FaSave, FaImage, FaUserTie, FaCode, FaBriefcase, FaGraduationCap } from "react-icons/fa";
+import { saveCurriculo } from "../../../../../lib/storage";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../../../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../../components/ui/card";
 import { Button } from "../../../../../components/ui/button";
 import { Input } from "../../../../../components/ui/input";
 import { Textarea } from "../../../../../components/ui/textarea";
 
-// Funções de Máscara Manuais (Modernas e sem erros de findDOMNode)
-const maskCPF = (value: string) => {
-  return value
-    .replace(/\D/g, "")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})/, "$1-$2")
-    .replace(/(-\d{2})\d+?$/, "$1");
-};
+interface IFormInput {
+  nome: string;
+  cargoDesejado: string;
+  email: string;
+  telefone: string;
+  cpf: string;
+  imagemUrl: string;
+  resumoProfissional: string;
+  habilidades: string;
+  experiencias: { empresa: string; cargo: string; descricao: string; }[];
+  formacoes: { instituicao: string; curso: string; }[];
+}
 
-const maskPhone = (value: string) => {
-  return value
-    .replace(/\D/g, "")
-    .replace(/(\d{2})(\d)/, "($1) $2")
-    .replace(/(\d{5})(\d)/, "$1-$2")
-    .replace(/(-\d{4})\d+?$/, "$1");
-};
+const maskCPF = (value: string) => value.replace(/\D/g, "").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})/, "$1-$2").replace(/(-\d{2})\d+?$/, "$1");
+const maskPhone = (value: string) => value.replace(/\D/g, "").replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2").replace(/(-\d{4})\d+?$/, "$1");
 
-// 1. Esquema de Validação com YUP
-const schema = yup.object({
-  nome: yup.string().required("O nome é obrigatório").min(3, "O nome deve ter no mínimo 3 caracteres"),
-  cargoDesejado: yup.string().required("O cargo desejado é obrigatório"),
-  email: yup.string().email("Digite um formato de e-mail válido").required("O e-mail é obrigatório"),
+const schema: yup.ObjectSchema<IFormInput> = yup.object({
+  nome: yup.string().required("O nome é obrigatório").min(3, "Mínimo 3 caracteres"),
+  cargoDesejado: yup.string().required("O cargo é obrigatório"),
+  email: yup.string().email("E-mail inválido").required("O e-mail é obrigatório"),
   telefone: yup.string().required("O telefone é obrigatório").min(14, "Telefone incompleto"),
   cpf: yup.string().required("O CPF é obrigatório").min(14, "CPF incompleto"),
-  resumoProfissional: yup.string().required("O resumo é obrigatório").min(20, "O resumo deve ter pelo menos 20 caracteres"),
-  habilidades: yup.string().required("Informe pelo menos uma habilidade (separe por vírgula)"),
+  imagemUrl: yup.string().default(""), 
+  resumoProfissional: yup.string().required("O resumo é obrigatório").min(20, "Mínimo 20 caracteres"),
+  habilidades: yup.string().required("Informe as habilidades"),
   experiencias: yup.array().of(
     yup.object({
-      empresa: yup.string().required("A empresa é obrigatória"),
-      cargo: yup.string().required("O cargo é obrigatório"),
-      descricao: yup.string().required("A descrição é obrigatória"),
-    })
+      empresa: yup.string().required("Obrigatório"),
+      cargo: yup.string().required("Obrigatório"),
+      descricao: yup.string().required("Obrigatório"),
+    }).required()
   ).required(),
   formacoes: yup.array().of(
     yup.object({
-      instituicao: yup.string().required("A instituição é obrigatória"),
-      curso: yup.string().required("O curso é obrigatório"),
-    })
+      instituicao: yup.string().required("Obrigatório"),
+      curso: yup.string().required("Obrigatório"),
+    }).required()
   ).required(),
 }).required();
 
-type FormData = yup.InferType<typeof schema>;
-
 export default function NovoCurriculo() {
-  const { register, control, handleSubmit, formState: { errors, isValid, isSubmitting }, reset } = useForm<FormData>({
+  const { register, control, handleSubmit, formState: { errors, isValid, isSubmitting }, reset } = useForm<IFormInput>({
     resolver: yupResolver(schema),
     mode: "onChange",
     defaultValues: {
+      nome: "", cargoDesejado: "", email: "", telefone: "", cpf: "", imagemUrl: "", resumoProfissional: "", habilidades: "",
       experiencias: [{ empresa: "", cargo: "", descricao: "" }],
       formacoes: [{ instituicao: "", curso: "" }]
     }
   });
 
-  const { fields: expFields, append: appendExp, remove: removeExp } = useFieldArray({
-    control,
-    name: "experiencias",
-  });
+  const { fields: expFields, append: appendExp, remove: removeExp } = useFieldArray({ control, name: "experiencias" });
+  const { fields: formFields, append: appendForm, remove: removeForm } = useFieldArray({ control, name: "formacoes" });
 
-  const { fields: formFields, append: appendForm, remove: removeForm } = useFieldArray({
-    control,
-    name: "formacoes",
-  });
-
-  const onSubmit = (data: FormData) => {
-    console.log("Dados do formulário:", data);
-    
-    toast.success("Currículo cadastrado com sucesso!", {
-      description: `O currículo de ${data.nome} foi salvo na base de dados.`,
-    });
-    
+  const onSubmit = (data: IFormInput) => {
+    const novoCandidato = { id: Math.random().toString(36).substring(2, 9), ...data };
+    saveCurriculo(novoCandidato);
+    toast.success("Candidato Registrado", { description: `${data.nome} foi salvo com sucesso.` });
     reset();
   };
 
-  // Correção: Mostra o erro específico do Yup no toast
-  const onError = (formErrors: FieldErrors<FormData>) => {
-    let mensagemErroEspecifica = "Preencha os campos corretamente.";
-
-    if (formErrors.nome) mensagemErroEspecifica = formErrors.nome.message as string;
-    else if (formErrors.cpf) mensagemErroEspecifica = formErrors.cpf.message as string;
-    else if (formErrors.telefone) mensagemErroEspecifica = formErrors.telefone.message as string;
-    else if (formErrors.email) mensagemErroEspecifica = formErrors.email.message as string;
-    else if (formErrors.cargoDesejado) mensagemErroEspecifica = formErrors.cargoDesejado.message as string;
-    else if (formErrors.resumoProfissional) mensagemErroEspecifica = formErrors.resumoProfissional.message as string;
-    else if (formErrors.habilidades) mensagemErroEspecifica = formErrors.habilidades.message as string;
-    else if (formErrors.experiencias || formErrors.formacoes) mensagemErroEspecifica = "Existem campos de experiência ou formação inválidos/vazios.";
-
-    toast.error("Erro na validação (Yup)", {
-      description: mensagemErroEspecifica,
-    });
+  const onError = (formErrors: FieldErrors<IFormInput>) => {
+    const errorMessages = Object.values(formErrors);
+    if (errorMessages.length > 0) {
+      toast.error("Erro de Validação", { description: String(errorMessages[0]?.message || "Verifique os dados") });
+    }
   };
 
+  // Classe padrão para inputs premium
+  const inputClass = "h-12 bg-background/50 border-border focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all hover:border-blue-500/30 rounded-xl";
+
   return (
-    <div className="container mx-auto py-10 px-4 max-w-4xl">
-      <div className="mb-6">
+    <div className="container mx-auto py-10 px-4 max-w-4xl relative animate-in fade-in slide-in-from-bottom-8 duration-700">
+      
+      {/* Background Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-64 bg-blue-500/10 blur-[100px] -z-10 rounded-full pointer-events-none"></div>
+
+      <div className="mb-8">
         <Link href="/sistema/paginas/curriculos">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" className="gap-2 bg-card/50 backdrop-blur-sm border-border hover:bg-blue-500/10 hover:text-blue-500 hover:border-blue-500/50 transition-all rounded-xl">
             <FaArrowLeft /> Voltar
           </Button>
         </Link>
       </div>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Cadastrar Currículo</h1>
-        <p className="text-muted-foreground mt-1">Preencha os dados abaixo para inserir um novo talento no sistema.</p>
+      <div className="mb-10">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-2">
+          Novo <span className="bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">Currículo</span>
+        </h1>
+        <p className="text-muted-foreground text-lg font-medium">
+          Cadastre um novo talento no sistema preenchendo os dados abaixo.
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8">
+      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-10 pb-20">
         
-        <Card className="bg-card border-border">
+        {/* DADOS PESSOAIS */}
+        <Card className="bg-card/40 backdrop-blur-md border-border shadow-lg hover:shadow-blue-500/5 hover:border-blue-500/30 transition-all duration-500 overflow-hidden rounded-2xl group">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-cyan-400 opacity-50 group-hover:opacity-100 transition-opacity"></div>
           <CardHeader>
-            <CardTitle>Dados Pessoais</CardTitle>
-            <CardDescription>Informações básicas de contacto do candidato.</CardDescription>
+            <CardTitle className="text-xl font-bold flex items-center gap-3">
+               <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500"><FaUserTie /></div>
+               Dados Pessoais
+            </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium">Nome Completo</label>
-              <Input placeholder="Ex: Vinícius dos Reis" {...register("nome")} className={errors.nome ? "border-red-500" : ""} />
-              <span className="text-xs text-red-500">{errors.nome?.message}</span>
+              <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Nome Completo</label>
+              <Input placeholder="Ex: Lucas Mendes" {...register("nome")} className={`${inputClass} ${errors.nome ? "border-red-500/50 focus:ring-red-500/20" : ""}`} />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">E-mail</label>
-              <Input type="email" placeholder="email@exemplo.com" {...register("email")} className={errors.email ? "border-red-500" : ""} />
-              <span className="text-xs text-red-500">{errors.email?.message}</span>
+              <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">E-mail</label>
+              <Input type="email" placeholder="lucas@exemplo.com" {...register("email")} className={inputClass} />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Cargo Desejado</label>
-              <Input placeholder="Ex: Desenvolvedor Front-end" {...register("cargoDesejado")} className={errors.cargoDesejado ? "border-red-500" : ""} />
-              <span className="text-xs text-red-500">{errors.cargoDesejado?.message}</span>
+              <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Cargo Desejado</label>
+              <Input placeholder="Ex: Desenvolvedor Front-end" {...register("cargoDesejado")} className={inputClass} />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Telefone</label>
-              <Input 
-                placeholder="(00) 00000-0000" 
-                {...register("telefone")} 
-                onChange={(e) => {
-                  e.target.value = maskPhone(e.target.value);
-                  register("telefone").onChange(e);
-                }}
-                className={errors.telefone ? "border-red-500" : ""} 
-              />
-              <span className="text-xs text-red-500">{errors.telefone?.message}</span>
+              <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Telefone</label>
+              <Input placeholder="(00) 00000-0000" {...register("telefone")} onChange={(e) => { e.target.value = maskPhone(e.target.value); register("telefone").onChange(e); }} className={inputClass} />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">CPF</label>
-              <Input 
-                placeholder="000.000.000-00" 
-                {...register("cpf")} 
-                onChange={(e) => {
-                  e.target.value = maskCPF(e.target.value);
-                  register("cpf").onChange(e);
-                }}
-                className={errors.cpf ? "border-red-500" : ""} 
-              />
-              <span className="text-xs text-red-500">{errors.cpf?.message}</span>
+              <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">CPF</label>
+              <Input placeholder="000.000.000-00" {...register("cpf")} onChange={(e) => { e.target.value = maskCPF(e.target.value); register("cpf").onChange(e); }} className={inputClass} />
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium">Foto de Perfil (Opcional)</label>
-              <div className="flex items-center gap-4">
-                <Button type="button" variant="outline" className="gap-2">
-                  <FaUpload /> Escolher Imagem
-                </Button>
-                <span className="text-xs text-muted-foreground">Nenhum ficheiro selecionado</span>
-              </div>
+              <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <FaImage className="text-blue-500" /> URL da Foto (Opcional)
+              </label>
+              <Input placeholder="https://github.com/usuario.png" {...register("imagemUrl")} className={inputClass} />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
+        {/* PERFIL E HABILIDADES */}
+        <Card className="bg-card/40 backdrop-blur-md border-border shadow-lg hover:shadow-blue-500/5 hover:border-blue-500/30 transition-all duration-500 rounded-2xl">
           <CardHeader>
-            <CardTitle>Perfil Profissional</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Resumo Profissional</label>
-              <Textarea placeholder="Descreva brevemente o perfil, experiências e objetivos..." className={`min-h-[100px] ${errors.resumoProfissional ? "border-red-500" : ""}`} {...register("resumoProfissional")} />
-              <span className="text-xs text-red-500">{errors.resumoProfissional?.message}</span>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Habilidades Técnicas</label>
-              <Input placeholder="Ex: React, Next.js, Tailwind, Montagem de PC" {...register("habilidades")} className={errors.habilidades ? "border-red-500" : ""} />
-              <span className="text-xs text-red-500">{errors.habilidades?.message}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Experiência Profissional</CardTitle>
-              <CardDescription>Adicione as experiências anteriores do candidato.</CardDescription>
-            </div>
-            <Button type="button" variant="outline" size="sm" onClick={() => appendExp({ empresa: "", cargo: "", descricao: "" })} className="gap-2 text-blue-500 border-blue-500 hover:bg-blue-500/10">
-              <FaPlus /> Adicionar
-            </Button>
+            <CardTitle className="text-xl font-bold flex items-center gap-3">
+              <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500"><FaCode /></div>
+              Perfil Profissional
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {expFields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg relative bg-background/50">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium">Empresa</label>
-                  <Input {...register(`experiencias.${index}.empresa`)} className={errors.experiencias?.[index]?.empresa ? "border-red-500" : ""} />
-                  <span className="text-xs text-red-500">{errors.experiencias?.[index]?.empresa?.message}</span>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium">Cargo</label>
-                  <Input {...register(`experiencias.${index}.cargo`)} className={errors.experiencias?.[index]?.cargo ? "border-red-500" : ""} />
-                  <span className="text-xs text-red-500">{errors.experiencias?.[index]?.cargo?.message}</span>
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-medium">Descrição das Atividades</label>
-                  <Textarea {...register(`experiencias.${index}.descricao`)} className={errors.experiencias?.[index]?.descricao ? "border-red-500" : ""} />
-                  <span className="text-xs text-red-500">{errors.experiencias?.[index]?.descricao?.message}</span>
-                </div>
-                {index > 0 && (
-                  <Button type="button" variant="destructive" size="icon" className="absolute -top-3 -right-3 h-8 w-8 rounded-full" onClick={() => removeExp(index)}>
-                    <FaTrash className="text-xs" />
-                  </Button>
-                )}
-              </div>
-            ))}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Resumo Profissional</label>
+              <Textarea placeholder="Descreva sua trajetória..." className="min-h-[120px] bg-background/50 border-border focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all hover:border-blue-500/30 rounded-xl" {...register("resumoProfissional")} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Habilidades Técnicas</label>
+              <Input placeholder="React, Node.js, TypeScript..." {...register("habilidades")} className={inputClass} />
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Formação Acadêmica</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => appendForm({ instituicao: "", curso: "" })} className="gap-2 text-green-500 border-green-500 hover:bg-green-500/10">
+        {/* EXPERIÊNCIAS */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+              <FaBriefcase className="text-blue-500" /> Experiência Profissional
+            </h2>
+            <Button type="button" onClick={() => appendExp({ empresa: "", cargo: "", descricao: "" })} className="gap-2 bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]">
               <FaPlus /> Adicionar
             </Button>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {formFields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg relative bg-background/50">
+          </div>
+          {expFields.map((field, index) => (
+            <Card key={field.id} className="bg-card/30 backdrop-blur-sm border-border relative group overflow-hidden rounded-2xl hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 hover:border-blue-500/40 transition-all duration-300">
+              {/* Barra Neon Lateral */}
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-cyan-400 opacity-60 group-hover:opacity-100 transition-opacity"></div>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 pl-8">
                 <div className="space-y-2">
-                  <label className="text-xs font-medium">Instituição</label>
-                  <Input {...register(`formacoes.${index}.instituicao`)} className={errors.formacoes?.[index]?.instituicao ? "border-red-500" : ""} />
-                  <span className="text-xs text-red-500">{errors.formacoes?.[index]?.instituicao?.message}</span>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Empresa</label>
+                  <Input {...register(`experiencias.${index}.empresa`)} className={inputClass} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium">Curso</label>
-                  <Input {...register(`formacoes.${index}.curso`)} className={errors.formacoes?.[index]?.curso ? "border-red-500" : ""} />
-                  <span className="text-xs text-red-500">{errors.formacoes?.[index]?.curso?.message}</span>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Cargo</label>
+                  <Input {...register(`experiencias.${index}.cargo`)} className={inputClass} />
+                </div>
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Descrição das Atividades</label>
+                  <Textarea {...register(`experiencias.${index}.descricao`)} className="bg-background/40 border-border focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all hover:border-blue-500/30 rounded-xl min-h-[80px]" />
                 </div>
                 {index > 0 && (
-                  <Button type="button" variant="destructive" size="icon" className="absolute -top-3 -right-3 h-8 w-8 rounded-full" onClick={() => removeForm(index)}>
-                    <FaTrash className="text-xs" />
+                  <Button type="button" variant="destructive" size="icon" className="absolute top-4 right-4 h-9 w-9 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg" onClick={() => removeExp(index)}>
+                    <FaTrash className="text-sm" />
                   </Button>
                 )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-        <div className="flex justify-end pt-4 pb-10">
+        {/* FORMAÇÃO ACADÊMICA */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+              <FaGraduationCap className="text-cyan-500" /> Formação Acadêmica
+            </h2>
+            <Button type="button" onClick={() => appendForm({ instituicao: "", curso: "" })} className="gap-2 bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 hover:bg-cyan-600 hover:text-white transition-all rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.1)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+              <FaPlus /> Adicionar
+            </Button>
+          </div>
+          {formFields.map((field, index) => (
+            <Card key={field.id} className="bg-card/30 backdrop-blur-sm border-border relative group overflow-hidden rounded-2xl hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/10 hover:border-cyan-500/40 transition-all duration-300">
+              {/* Barra Neon Lateral Ciano */}
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-cyan-400 to-teal-400 opacity-60 group-hover:opacity-100 transition-opacity"></div>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 pl-8">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Instituição</label>
+                  <Input {...register(`formacoes.${index}.instituicao`)} className={inputClass} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Curso</label>
+                  <Input {...register(`formacoes.${index}.curso`)} className={inputClass} />
+                </div>
+                {index > 0 && (
+                  <Button type="button" variant="destructive" size="icon" className="absolute top-4 right-4 h-9 w-9 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg bg-red-500 hover:bg-red-600" onClick={() => removeForm(index)}>
+                    <FaTrash className="text-sm" />
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* BOTÃO FINALIZAR - Premium Glow */}
+        <div className="flex justify-end pt-8 border-t border-border/50">
           <Button 
             type="submit" 
-            size="lg" 
             disabled={!isValid || isSubmitting} 
-            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-600 disabled:cursor-not-allowed w-full md:w-auto"
+            className="w-full md:w-auto h-14 px-12 text-lg font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-300 hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 rounded-xl disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
           >
-            <FaSave /> {isSubmitting ? "Salvando..." : "Salvar Currículo"}
+            {isSubmitting ? "Processando..." : "Salvar Currículo"}
+            <FaSave className="ml-3" />
           </Button>
         </div>
       </form>
