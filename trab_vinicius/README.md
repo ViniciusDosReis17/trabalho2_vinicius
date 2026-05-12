@@ -56,7 +56,7 @@ O projeto respeita os critérios de refinamento de interface exigidos:
 
 ---
 
-## 🏁 Como Executar
+##  Como Executar
 
 1.  Instale as dependências:
     ```bash
