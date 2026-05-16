@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DevGestão - Sistema de Gestão de Currículos
 
-## Getting Started
+Este projeto é uma aplicação web desenvolvida para o **Trabalho 2** da disciplina, focada na experiência do usuário (UX) e em uma arquitetura modular utilizando o ecossistema **Next.js**. O sistema permite o cadastro, visualização e gerenciamento de currículos com uma interface inspirada na identidade visual de alta performance das lives do streamer Coringa (LOUD).
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+##  Stack Tecnológica
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Para atender aos requisitos técnicos e desafios propostos, foram utilizadas as seguintes ferramentas:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+* **Framework:** Next.js (App Router) para rotas dinâmicas e gerenciamento de páginas.
+* **Estilização:** Tailwind CSS para design responsivo e customização de temas.
+* **UI Library:** shadcn/ui para a construção de componentes de interface consistentes.
+* **Formulários:** React Hook Form e Yup para o gerenciamento e validação de esquemas.
+* **Notificações:** Sonner para feedbacks visuais via toasts em todas as ações do sistema.
+* **Ícones:** React Icons para uma navegação intuitiva e identificação de funcionalidades.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+##  Estrutura de Rotas e Páginas
 
-To learn more about Next.js, take a look at the following resources:
+A aplicação segue a organização modular de pastas exigida:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1.  **Home (`/`):** Landing page apresentando os benefícios e funcionalidades do sistema.
+2.  **Lista de Currículos (`/sistema/paginas/curriculos`):** Exibição de cards com resumos e filtro de busca em tempo real.
+3.  **Detalhes do Currículo (`/sistema/paginas/curriculos/[id]`):** Rota dinâmica que exibe todas as informações do candidato e permite a geração de documentos (PDF).
+4.  **Cadastro (`/sistema/paginas/curriculos/novo`):** Formulário completo para inserção de novos dados com validação rigorosa.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+##  Desafios Técnicos Implementados
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Para atingir a nota máxima na etapa 1, o projeto implementou obrigatoriamente os seguintes desafios:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 1. Gerenciamento de Formulário Dinâmico (Field Arrays)
+O formulário de cadastro não é estático. Foi implementada a funcionalidade de campos dinâmicos utilizando o `useFieldArray` do **React Hook Form**. O usuário é capaz de adicionar ou remover múltiplos campos de **Experiência Profissional** e **Formação Acadêmica** dinamicamente no mesmo formulário.
+
+### 2. Validação e Máscaras de Entrada
+* **Validação por Esquema:** Cada item adicionado dinamicamente é validado pelo esquema do **Yup**.
+* **Máscaras:** Foram aplicadas máscaras de entrada em campos críticos como **CPF** e **Telefone** para garantir a integridade dos dados.
+* **Feedback de Erro:** O toast do **Sonner** exibe a descrição específica do erro retornado pela validação do Yup.
+
+### 3. Filtro e Busca em Tempo Real
+A lista de talentos é filtrada automaticamente por **Nome** ou **Cargo** à medida que o usuário digita na barra de busca, otimizando a consulta aos dados.
+
+---
+
+##  Design e Usabilidade
+
+O projeto respeita os critérios de refinamento de interface exigidos:
+
+* **Identidade Visual:** Aplicação de paleta de cores contrastantes (Verde Neon e Roxo Escuro) que respeitam os níveis de legibilidade e estética moderna.
+* **Estados de Elementos:** Botões possuem estados de `hover`, `focus-visible` e `disabled` quando o formulário é inválido ou está sendo enviado.
+* **Navegação:** O menu Nav implementa um link ativo (**active state**) visual para indicar a localização atual do usuário no sistema.
+* **Persistência:** Os dados são armazenados localmente via `localStorage` para garantir o funcionamento da aplicação mockada.
+
+---
+
+##  Como Executar
+
+1.  Instale as dependências:
+    ```bash
+    npm install
+    ```
+2.  Inicie o servidor de desenvolvimento:
+    ```bash
+    npm run dev
+    ```
+3.  Acesse:
+    `http://localhost:3000`
+
+---
