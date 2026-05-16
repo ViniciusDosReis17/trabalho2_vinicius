@@ -23,11 +23,12 @@ export default function ListaCurriculos() {
   }, []);
 
   const handleExcluir = (id: string, nome: string) => {
-    // Confirmação nativa simples antes de excluir
     if (window.confirm(`Tem certeza que deseja excluir o currículo de ${nome}?`)) {
       deleteCurriculo(id);
-      carregarDados(); // Atualiza a lista na hora
-      toast.success("Currículo excluído", { description: `${nome} foi removido do sistema.` });
+      carregarDados();
+      toast.success("Currículo removido", { 
+        style: { background: '#1a1a1a', color: '#22c55e', border: '1px solid #22c55e33' }
+      });
     }
   };
 
@@ -40,31 +41,32 @@ export default function ListaCurriculos() {
   });
 
   return (
-    <div className="container mx-auto py-10 px-4 max-w-6xl animate-in fade-in duration-500">
+    <div className="container mx-auto py-10 px-4 max-w-6xl animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground">
-            Currículos
+            Gerenciar <span className="text-primary">Talentos</span>
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Gerencie os candidatos cadastrados no sistema.
+            Lista de currículos cadastrados na base DevGestão.
           </p>
         </div>
         <Link href="/sistema/paginas/curriculos/novo">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all hover:scale-105 flex items-center gap-2 h-11 px-6">
+          <Button className="bg-primary hover:bg-primary/80 text-primary-foreground shadow-[0_0_15px_rgba(34,197,94,0.2)] transition-all hover:scale-105 flex items-center gap-2 h-11 px-6 rounded-xl font-bold">
             <FaPlus /> Novo Currículo
           </Button>
         </Link>
       </div>
 
-      <div className="relative mb-10 max-w-xl">
+      {/* Barra de Busca com foco Verde */}
+      <div className="relative mb-10 max-w-xl group">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <FaSearch className="text-blue-500" />
+          <FaSearch className="text-primary group-focus-within:scale-110 transition-transform" />
         </div>
         <Input
           type="text"
           placeholder="Buscar por nome ou cargo..."
-          className="pl-11 h-12 bg-card/50 backdrop-blur-sm border-border focus:border-blue-500/50 focus:ring-blue-500/20 transition-all text-base rounded-xl shadow-sm"
+          className="pl-11 h-12 bg-card/50 backdrop-blur-sm border-border focus:border-primary/50 focus:ring-primary/20 transition-all text-base rounded-xl shadow-sm"
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
         />
@@ -73,10 +75,13 @@ export default function ListaCurriculos() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {curriculosFiltrados.length > 0 ? (
           curriculosFiltrados.map((curriculo) => (
-            <Card key={curriculo.id} className="flex flex-col h-full bg-card/50 backdrop-blur-sm border-border hover:-translate-y-2 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:border-blue-500/50 group">
+            <Card key={curriculo.id} className="flex flex-col h-full bg-card/50 backdrop-blur-md border-border hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 hover:border-primary/40 group overflow-hidden relative">
+              {/* Detalhe estético no topo do card */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/40 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              
               <CardHeader>
-                <CardTitle className="text-2xl font-bold group-hover:text-blue-500 transition-colors">{curriculo.nome}</CardTitle>
-                <CardDescription className="font-medium text-blue-500 text-base">
+                <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors">{curriculo.nome}</CardTitle>
+                <CardDescription className="font-semibold text-primary/80 text-base">
                   {curriculo.cargoDesejado}
                 </CardDescription>
               </CardHeader>
@@ -86,7 +91,7 @@ export default function ListaCurriculos() {
                 </p>
                 <div className="mt-auto pt-6 border-t border-border/50 flex gap-3">
                   <Link href={`/sistema/paginas/curriculos/${curriculo.id}`} className="flex-1">
-                    <Button variant="outline" className="w-full border-border hover:bg-blue-500/10 hover:text-blue-500 transition-colors">
+                    <Button variant="outline" className="w-full border-border hover:bg-primary/10 hover:text-primary hover:border-primary/50 transition-all rounded-lg font-medium">
                       Ver Detalhes
                     </Button>
                   </Link>
@@ -94,18 +99,18 @@ export default function ListaCurriculos() {
                     variant="outline" 
                     size="icon" 
                     onClick={() => handleExcluir(curriculo.id, curriculo.nome)}
-                    className="border-border hover:bg-red-500/10 hover:text-red-500 transition-colors shrink-0"
+                    className="border-border hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50 transition-all shrink-0 rounded-lg"
                   >
-                    <FaTrash />
+                    <FaTrash className="text-sm" />
                   </Button>
                 </div>
               </CardContent>
             </Card>
           ))
         ) : (
-          <div className="col-span-full flex flex-col items-center justify-center py-20 text-muted-foreground bg-card/30 rounded-2xl border border-dashed border-border">
-            <FaSearch className="text-4xl mb-4 opacity-20" />
-            <p className="text-lg">Nenhum currículo encontrado para &quot;<span className="text-foreground font-medium">{busca}</span>&quot;.</p>
+          <div className="col-span-full flex flex-col items-center justify-center py-20 text-muted-foreground bg-card/20 rounded-3xl border-2 border-dashed border-border/50">
+            <FaSearch className="text-5xl mb-4 opacity-10 text-primary" />
+            <p className="text-lg font-medium">Nenhum talento encontrado para &quot;<span className="text-primary">{busca}</span>&quot;.</p>
           </div>
         )}
       </div>

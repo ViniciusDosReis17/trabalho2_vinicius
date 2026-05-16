@@ -5,7 +5,7 @@ import { useForm, useFieldArray, FieldErrors } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast } from "sonner";
-import { FaArrowLeft, FaPlus, FaTrash, FaSave, FaImage, FaUserTie, FaCode, FaBriefcase, FaGraduationCap } from "react-icons/fa";
+import { FaArrowLeft, FaPlus, FaTrash, FaSave, FaImage, FaUserTie, FaCode, FaBriefcase, FaGraduationCap, FaExclamationCircle } from "react-icons/fa";
 import { saveCurriculo } from "../../../../../lib/storage";
 
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../../components/ui/card";
@@ -70,7 +70,9 @@ export default function NovoCurriculo() {
   const onSubmit = (data: IFormInput) => {
     const novoCandidato = { id: Math.random().toString(36).substring(2, 9), ...data };
     saveCurriculo(novoCandidato);
-    toast.success("Candidato Registrado", { description: `${data.nome} foi salvo com sucesso.` });
+    toast.success("Candidato Registrado", { 
+      style: { background: '#0a0a0a', color: '#22c55e', border: '1px solid #22c55e' }
+    });
     reset();
   };
 
@@ -81,18 +83,17 @@ export default function NovoCurriculo() {
     }
   };
 
-  // Classe padrão para inputs premium
-  const inputClass = "h-12 bg-background/50 border-border focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all hover:border-blue-500/30 rounded-xl";
+  const inputClass = "h-12 bg-background/50 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all rounded-xl";
 
   return (
     <div className="container mx-auto py-10 px-4 max-w-4xl relative animate-in fade-in slide-in-from-bottom-8 duration-700">
       
-      {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-64 bg-blue-500/10 blur-[100px] -z-10 rounded-full pointer-events-none"></div>
+      {/* Glow de fundo inspirado no Coringa */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-64 bg-primary/10 blur-[100px] -z-10 rounded-full pointer-events-none"></div>
 
       <div className="mb-8">
         <Link href="/sistema/paginas/curriculos">
-          <Button variant="outline" className="gap-2 bg-card/50 backdrop-blur-sm border-border hover:bg-blue-500/10 hover:text-blue-500 hover:border-blue-500/50 transition-all rounded-xl">
+          <Button variant="outline" className="gap-2 bg-card/50 backdrop-blur-sm border-border hover:bg-primary/10 hover:text-primary hover:border-primary/50 transition-all rounded-xl">
             <FaArrowLeft /> Voltar
           </Button>
         </Link>
@@ -100,21 +101,19 @@ export default function NovoCurriculo() {
 
       <div className="mb-10">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-2">
-          Novo <span className="bg-gradient-to-r from-blue-500 to-cyan-400 bg-clip-text text-transparent">Currículo</span>
+          Novo <span className="text-primary">Currículo</span>
         </h1>
-        <p className="text-muted-foreground text-lg font-medium">
-          Cadastre um novo talento no sistema preenchendo os dados abaixo.
-        </p>
+        <p className="text-muted-foreground text-lg font-medium">Cadastre um novo talento no sistema.</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-10 pb-20">
         
-        {/* DADOS PESSOAIS */}
-        <Card className="bg-card/40 backdrop-blur-md border-border shadow-lg hover:shadow-blue-500/5 hover:border-blue-500/30 transition-all duration-500 overflow-hidden rounded-2xl group">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-cyan-400 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+        {/* SEÇÃO: DADOS PESSOAIS */}
+        <Card className="bg-card/40 backdrop-blur-md border-border shadow-lg hover:border-primary/30 transition-all duration-500 rounded-2xl group overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-purple-600 opacity-60 group-hover:opacity-100 transition-opacity"></div>
           <CardHeader>
             <CardTitle className="text-xl font-bold flex items-center gap-3">
-               <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500"><FaUserTie /></div>
+               <div className="p-2 bg-primary/10 rounded-lg text-primary"><FaUserTie /></div>
                Dados Pessoais
             </CardTitle>
           </CardHeader>
@@ -122,6 +121,7 @@ export default function NovoCurriculo() {
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Nome Completo</label>
               <Input placeholder="Ex: Lucas Mendes" {...register("nome")} className={`${inputClass} ${errors.nome ? "border-red-500/50 focus:ring-red-500/20" : ""}`} />
+              {errors.nome && <p className="text-xs text-red-400 flex items-center gap-1"><FaExclamationCircle /> {errors.nome.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -131,7 +131,7 @@ export default function NovoCurriculo() {
 
             <div className="space-y-2">
               <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Cargo Desejado</label>
-              <Input placeholder="Ex: Desenvolvedor Front-end" {...register("cargoDesejado")} className={inputClass} />
+              <Input placeholder="Ex: Desenvolvedor Full Stack" {...register("cargoDesejado")} className={inputClass} />
             </div>
 
             <div className="space-y-2">
@@ -146,47 +146,46 @@ export default function NovoCurriculo() {
 
             <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                <FaImage className="text-blue-500" /> URL da Foto (Opcional)
+                <FaImage className="text-primary" /> URL da Foto (Opcional)
               </label>
               <Input placeholder="https://github.com/usuario.png" {...register("imagemUrl")} className={inputClass} />
             </div>
           </CardContent>
         </Card>
 
-        {/* PERFIL E HABILIDADES */}
-        <Card className="bg-card/40 backdrop-blur-md border-border shadow-lg hover:shadow-blue-500/5 hover:border-blue-500/30 transition-all duration-500 rounded-2xl">
+        {/* SEÇÃO: PERFIL E HABILIDADES */}
+        <Card className="bg-card/40 backdrop-blur-md border-border shadow-lg hover:border-primary/30 transition-all duration-500 rounded-2xl">
           <CardHeader>
             <CardTitle className="text-xl font-bold flex items-center gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500"><FaCode /></div>
+              <div className="p-2 bg-primary/10 rounded-lg text-primary"><FaCode /></div>
               Perfil Profissional
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Resumo Profissional</label>
-              <Textarea placeholder="Descreva sua trajetória..." className="min-h-[120px] bg-background/50 border-border focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all hover:border-blue-500/30 rounded-xl" {...register("resumoProfissional")} />
+              <Textarea placeholder="Descreva sua trajetória..." className="min-h-[120px] bg-background/50 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all hover:border-primary/30 rounded-xl" {...register("resumoProfissional")} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Habilidades Técnicas</label>
-              <Input placeholder="React, Node.js, TypeScript..." {...register("habilidades")} className={inputClass} />
+              <Input placeholder="React, TypeScript, Tailwind..." {...register("habilidades")} className={inputClass} />
             </div>
           </CardContent>
         </Card>
 
-        {/* EXPERIÊNCIAS */}
+        {/* SEÇÃO: EXPERIÊNCIA PROFISSIONAL */}
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
-              <FaBriefcase className="text-blue-500" /> Experiência Profissional
+              <FaBriefcase className="text-primary" /> Experiência Profissional
             </h2>
-            <Button type="button" onClick={() => appendExp({ empresa: "", cargo: "", descricao: "" })} className="gap-2 bg-blue-500/10 text-blue-500 border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+            <Button type="button" onClick={() => appendExp({ empresa: "", cargo: "", descricao: "" })} className="gap-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-black transition-all rounded-xl font-bold">
               <FaPlus /> Adicionar
             </Button>
           </div>
           {expFields.map((field, index) => (
-            <Card key={field.id} className="bg-card/30 backdrop-blur-sm border-border relative group overflow-hidden rounded-2xl hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 hover:border-blue-500/40 transition-all duration-300">
-              {/* Barra Neon Lateral */}
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-cyan-400 opacity-60 group-hover:opacity-100 transition-opacity"></div>
+            <Card key={field.id} className="bg-card/30 backdrop-blur-sm border-border relative group overflow-hidden rounded-2xl hover:border-primary/40 transition-all">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-primary/60 group-hover:bg-primary transition-colors"></div>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 pl-8">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Empresa</label>
@@ -197,11 +196,11 @@ export default function NovoCurriculo() {
                   <Input {...register(`experiencias.${index}.cargo`)} className={inputClass} />
                 </div>
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Descrição das Atividades</label>
-                  <Textarea {...register(`experiencias.${index}.descricao`)} className="bg-background/40 border-border focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all hover:border-blue-500/30 rounded-xl min-h-[80px]" />
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Descrição</label>
+                  <Textarea {...register(`experiencias.${index}.descricao`)} className="bg-background/40 border-border focus:border-primary transition-all rounded-xl min-h-[80px]" />
                 </div>
                 {index > 0 && (
-                  <Button type="button" variant="destructive" size="icon" className="absolute top-4 right-4 h-9 w-9 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg" onClick={() => removeExp(index)}>
+                  <Button type="button" variant="destructive" size="icon" className="absolute top-4 right-4 h-9 w-9 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg" onClick={() => removeExp(index)}>
                     <FaTrash className="text-sm" />
                   </Button>
                 )}
@@ -210,20 +209,19 @@ export default function NovoCurriculo() {
           ))}
         </div>
 
-        {/* FORMAÇÃO ACADÊMICA */}
+        {/* SEÇÃO: FORMAÇÃO ACADÊMICA */}
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
-              <FaGraduationCap className="text-cyan-500" /> Formação Acadêmica
+              <FaGraduationCap className="text-purple-500" /> Formação Acadêmica
             </h2>
-            <Button type="button" onClick={() => appendForm({ instituicao: "", curso: "" })} className="gap-2 bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 hover:bg-cyan-600 hover:text-white transition-all rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.1)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+            <Button type="button" onClick={() => appendForm({ instituicao: "", curso: "" })} className="gap-2 bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-600 hover:text-white transition-all rounded-xl font-bold">
               <FaPlus /> Adicionar
             </Button>
           </div>
           {formFields.map((field, index) => (
-            <Card key={field.id} className="bg-card/30 backdrop-blur-sm border-border relative group overflow-hidden rounded-2xl hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/10 hover:border-cyan-500/40 transition-all duration-300">
-              {/* Barra Neon Lateral Ciano */}
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-cyan-400 to-teal-400 opacity-60 group-hover:opacity-100 transition-opacity"></div>
+            <Card key={field.id} className="bg-card/30 backdrop-blur-sm border-border relative group overflow-hidden rounded-2xl hover:border-purple-500/40 transition-all">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-purple-500/60 group-hover:bg-purple-500 transition-colors"></div>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 pl-8">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Instituição</label>
@@ -234,7 +232,7 @@ export default function NovoCurriculo() {
                   <Input {...register(`formacoes.${index}.curso`)} className={inputClass} />
                 </div>
                 {index > 0 && (
-                  <Button type="button" variant="destructive" size="icon" className="absolute top-4 right-4 h-9 w-9 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg bg-red-500 hover:bg-red-600" onClick={() => removeForm(index)}>
+                  <Button type="button" variant="destructive" size="icon" className="absolute top-4 right-4 h-9 w-9 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg bg-red-500 hover:bg-red-600" onClick={() => removeForm(index)}>
                     <FaTrash className="text-sm" />
                   </Button>
                 )}
@@ -243,14 +241,14 @@ export default function NovoCurriculo() {
           ))}
         </div>
 
-        {/* BOTÃO FINALIZAR - Premium Glow */}
+        {/* BOTÃO SALVAR - Estilo Premium LOUD */}
         <div className="flex justify-end pt-8 border-t border-border/50">
           <Button 
             type="submit" 
             disabled={!isValid || isSubmitting} 
-            className="w-full md:w-auto h-14 px-12 text-lg font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-300 hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 rounded-xl disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+            className="w-full md:w-auto h-14 px-12 text-lg font-bold bg-primary hover:bg-primary/80 text-black shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all duration-300 hover:scale-[1.02] rounded-xl"
           >
-            {isSubmitting ? "Processando..." : "Salvar Currículo"}
+            {isSubmitting ? "Gravando..." : "Salvar Currículo"}
             <FaSave className="ml-3" />
           </Button>
         </div>

@@ -6,22 +6,24 @@ import { FaAddressCard, FaCheckCircle, FaRocket, FaArrowRight } from "react-icon
 export default function Home() {
   return (
     <div className="relative flex flex-col items-center justify-center w-full min-h-screen overflow-hidden">
-      {/* Background Pattern moderno (Grid pontilhado) */}
-      <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:24px_24px]"></div>
+      {/* Background Pattern - Grid com pontinhos levemente roxos/verdes */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(rgba(139,92,246,0.15)_1px,transparent_1px)] [background-size:24px_24px]"></div>
       
-      {/* Luz de fundo radial (Glow) para dar profundidade */}
-      <div className="absolute top-0 z-[-1] h-screen w-full bg-background dark:bg-background bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(37,99,235,0.15),rgba(255,255,255,0))]"></div>
+      {/* Luz de fundo radial (Glow) usando Roxo escuro para dar a vibe do cenário */}
+      <div className="absolute top-0 z-[-1] h-screen w-full bg-background dark:bg-background bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(109,40,217,0.25),rgba(255,255,255,0))]"></div>
 
       {/* Seção Principal (Hero) */}
       <section className="w-full py-20 md:py-32 flex flex-col items-center text-center px-4 mt-10">
-        <div className="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-sm font-medium text-blue-500 mb-8 backdrop-blur-sm">
-          <span className="flex h-2 w-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
+        {/* Badge do topo em Verde (primary) */}
+        <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary mb-8 backdrop-blur-sm">
+          <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse shadow-[0_0_8px_var(--theme-primary)]"></span>
           Sistema de Gestão v1.0
         </div>
         
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground mb-6 max-w-4xl">
           Gestão de Currículos <br className="hidden md:block" />
-          <span className="bg-gradient-to-r from-blue-600 to-cyan-400 bg-clip-text text-transparent">
+          {/* Gradiente Verde para Roxo */}
+          <span className="bg-gradient-to-r from-primary via-emerald-400 to-purple-500 bg-clip-text text-transparent drop-shadow-sm">
             Simplificada
           </span>
         </h1>
@@ -32,13 +34,15 @@ export default function Home() {
         
         <div className="flex flex-col sm:flex-row gap-4">
           <Link href="/sistema/paginas/curriculos">
-            <Button size="lg" className="h-12 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all hover:scale-105 group">
+            {/* Botão Principal em Verde LOUD */}
+            <Button size="lg" className="h-12 px-8 text-base bg-primary hover:bg-primary/80 text-primary-foreground shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all hover:scale-105 group">
               Acessar o Sistema
               <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
           <Link href="/sistema/paginas/curriculos/novo">
-            <Button size="lg" variant="outline" className="h-12 px-8 text-base border-border bg-background/50 backdrop-blur-md hover:bg-accent transition-all hover:scale-105">
+            {/* Botão Secundário outline com hover roxo */}
+            <Button size="lg" variant="outline" className="h-12 px-8 text-base border-border bg-background/50 backdrop-blur-md hover:bg-secondary hover:text-secondary-foreground hover:border-secondary transition-all hover:scale-105">
               Cadastrar Candidato
             </Button>
           </Link>
@@ -48,9 +52,11 @@ export default function Home() {
       {/* Seção de Benefícios */}
       <section className="w-full py-20 max-w-6xl mx-auto px-4 z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card className="bg-card/50 backdrop-blur-sm border-border hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:border-blue-500/50">
+          
+          {/* CARD 1 */}
+          <Card className="bg-card/50 backdrop-blur-sm border-border hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 hover:border-primary/50 group">
             <CardHeader className="flex flex-col items-center text-center pb-2">
-              <div className="p-3 bg-blue-500/10 rounded-2xl mb-4 text-blue-500">
+              <div className="p-3 bg-primary/10 rounded-2xl mb-4 text-primary group-hover:scale-110 transition-transform">
                 <FaRocket className="text-3xl" />
               </div>
               <CardTitle className="text-xl">Interface Moderna</CardTitle>
@@ -62,9 +68,10 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/50 backdrop-blur-sm border-border hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:border-blue-500/50">
+          {/* CARD 2 */}
+          <Card className="bg-card/50 backdrop-blur-sm border-border hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:border-purple-500/50 group">
             <CardHeader className="flex flex-col items-center text-center pb-2">
-              <div className="p-3 bg-blue-500/10 rounded-2xl mb-4 text-blue-500">
+              <div className="p-3 bg-purple-500/10 rounded-2xl mb-4 text-purple-400 group-hover:scale-110 transition-transform">
                 <FaAddressCard className="text-3xl" />
               </div>
               <CardTitle className="text-xl">Gestão Centralizada</CardTitle>
@@ -76,9 +83,10 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/50 backdrop-blur-sm border-border hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:border-blue-500/50">
+          {/* CARD 3 */}
+          <Card className="bg-card/50 backdrop-blur-sm border-border hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 hover:border-primary/50 group">
             <CardHeader className="flex flex-col items-center text-center pb-2">
-              <div className="p-3 bg-blue-500/10 rounded-2xl mb-4 text-blue-500">
+              <div className="p-3 bg-primary/10 rounded-2xl mb-4 text-primary group-hover:scale-110 transition-transform">
                 <FaCheckCircle className="text-3xl" />
               </div>
               <CardTitle className="text-xl">Validação Rigorosa</CardTitle>
@@ -89,6 +97,7 @@ export default function Home() {
               </CardDescription>
             </CardContent>
           </Card>
+
         </div>
       </section>
     </div>
